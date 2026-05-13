@@ -1,0 +1,184 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seal Hero - Official Site</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #004a7c;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+        }
+
+        /* Океан */
+        .ocean {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 25vh;
+            background: linear-gradient(180deg, #006994 0%, #001e3c 100%);
+            z-index: 5;
+        }
+
+        /* Улучшенный тюлень */
+        .jumper {
+            position: absolute;
+            bottom: -120px;
+            left: 10%;
+            width: 110px;
+            height: 60px;
+            background: #999;
+            border-radius: 50% 50% 40% 40%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            animation: perfectJump 2.8s cubic-bezier(0.35, 0, 0.3, 1) forwards;
+        }
+        
+        /* Глаз и хвост тюленя */
+        .jumper::after { content: ''; width: 10px; height: 10px; background: black; border-radius: 50%; margin-right: 15px; border: 2px solid white; }
+        .jumper::before { content: ''; position: absolute; left: -15px; width: 30px; height: 30px; background: #999; clip-path: polygon(100% 50%, 0% 0%, 0% 100%); }
+
+        @keyframes perfectJump {
+            0% { transform: translate(0, 0) rotate(-45deg); }
+            45% { transform: translate(40vw, -65vh) rotate(0deg); }
+            90% { transform: translate(75vw, 50px) rotate(45deg); opacity: 1; }
+            100% { transform: translate(80vw, 200px) rotate(60deg); opacity: 0; }
+        }
+
+        /* ГРАФИЧЕСКАЯ ВОЛНА (SVG) */
+        .wave-container {
+            position: fixed;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            z-index: 20;
+            transition: top 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .wave-container.active { top: -10%; }
+
+        .svg-wave {
+            width: 100%;
+            height: 100%;
+            fill: #87CEEB;
+        }
+
+        /* Контент */
+        .content {
+            opacity: 0;
+            transform: scale(0.8);
+            text-align: center;
+            z-index: 25;
+            transition: all 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        
+        .content.show { opacity: 1; transform: scale(1); }
+
+        .game-icon {
+            width: 160px;
+            height: 160px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 6px solid white;
+            background: #fff; /* Фон если картинка не прогрузится */
+        }
+
+        h1 { font-size: 3.5rem; letter-spacing: 2px; margin-bottom: 5px; }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 22px 60px;
+            background: #FFD700;
+            color: #000;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 1.6rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 0 #b89b00;
+            transition: 0.2s;
+        }
+        
+        .download-btn:hover { background: #ffe033; transform: translateY(-2px); }
+        .download-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #b89b00; }
+
+        /* Эффект брызг */
+        .splash {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 4px solid white;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 6;
+        }
+        @keyframes splashAnim {
+            0% { transform: scale(0.1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ocean"></div>
+    <div class="jumper" id="seal"></div>
+    <div id="splash-point" class="splash"></div>
+    
+    <div class="wave-container" id="wave">
+        <svg class="svg-wave" viewBox="0 0 1440 800" preserveAspectRatio="none">
+            <path d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,213.3C672,224,768,192,864,160C960,128,1056,96,1152,106.7C1248,117,1344,171,1392,197.3L1440,224L1440,800L1392,800C1344,800,1248,800,1152,800C1056,800,960,800,864,800C768,800,672,800,576,800C480,800,384,800,288,800C192,800,96,800,48,800L0,800Z"></path>
+        </svg>
+    </div>
+
+    <div class="content" id="mainContent">
+        <img src="icon.png" alt="Icon" class="game-icon">
+        <h1>SEAL HERO</h1>
+        <p>Лучшее приключение под водой</p>
+        <a href="seal.apk" class="download-btn">УСТАНОВИТЬ APK</a>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const wave = document.getElementById('wave');
+            const content = document.getElementById('mainContent');
+            const splash = document.getElementById('splash-point');
+
+            // Брызги при падении (на 2.2 секунде)
+            setTimeout(() => {
+                splash.style.left = '75%';
+                splash.style.bottom = '20vh';
+                splash.style.animation = 'splashAnim 0.5s ease-out';
+            }, 2200);
+
+            // Волна накрывает
+            setTimeout(() => {
+                wave.classList.add('active');
+            }, 2400);
+
+            // Волна уходит вверх (смывается)
+            setTimeout(() => {
+                wave.style.transition = 'top 0.8s ease-in';
+                wave.style.top = '-120%';
+            }, 3500);
+
+            // Появление кнопки и иконки
+            setTimeout(() => {
+                content.classList.add('show');
+            }, 3800);
+        });
+    </script>
+</body>
+</html>
